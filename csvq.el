@@ -1,4 +1,4 @@
-;;; csvq.el --- Emacs Extension for csvq (https://github.com/mithrandie/csvq)
+;;; csvq.el --- Emacs Extension for csvq
 
 ;; Copyright (C) 2018 Mithrandie <mithrandie@icloud.com>
 
@@ -9,6 +9,8 @@
 
 ;; This package is a extensin for csvq (https://github.com/mithrandie/csvq).
 ;; You need to install the csvq command-line tool to use functions in this package.
+
+(provide 'csvq)
 
 ;;; Variables
 
