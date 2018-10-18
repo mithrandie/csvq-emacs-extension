@@ -32,6 +32,8 @@
 - csvq-insert-org :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in Org-mode table.
 - csvq-insert-text :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in text table.
 
+- csvq-calc :: Execute calc subcommand of csvq. A string of current active region is used as a value to be calculated.
+
 * Query and Options
 
 ** Query

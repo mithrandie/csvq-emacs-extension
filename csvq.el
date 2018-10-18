@@ -72,6 +72,28 @@
   (let ((options (format "-f %s -P" output-format)))
     (csvq-insert-ops nil options)))
 
+(defun csvq-calc ()
+  "Execute calc subcommand of csvq."
+  (interactive)
+  (unless (region-active-p)
+    (csvq-error "value is not selected"))
+  (let ((result)
+        (expression (read-string "expression: "))
+        (value (buffer-substring-no-properties (region-beginning) (region-end))))
+    (if (equal expression "")
+      (csvq-error "expression is empty"))
+    (csvq-start (format "Execute calc (value '%s'): %s" value expression))
+    (with-temp-buffer
+      (insert value)
+      (let ((ret (call-process-region (point-min) (point-max) "csvq" t t nil "calc" expression)))
+        (unless (zerop ret)
+          (csvq-error (csvq-error-message)))
+        (csvq-append-log (format "%s\n" (buffer-string)))
+        (setq result (buffer-string))))
+    (delete-region (region-beginning) (region-end))
+    (insert result))
+  (csvq-terminate))
+
 (defun csvq-insert-csv ()
   "Execute csvq and insert logs and result-set formatted in CSV into the current buffer."
   (interactive)
@@ -129,7 +151,7 @@
   (when auto-select
     (setq query (format "%s SELECT * FROM stdin;" query)))
   (let ((current-point (point))
-	(view (csvq-org-table-exec query options t)))
+        (view (csvq-org-table-exec query options t)))
     (delete-region (org-table-begin) (org-table-end))
     (insert view)
     (goto-char (min current-point (point-max))))
