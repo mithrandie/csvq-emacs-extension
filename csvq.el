@@ -21,7 +21,7 @@
 (defvar csvq-default-format "ORG")
 
 
-(defun csvq-with-options (&optional query options)
+(defun csvq-ops (&optional query options)
   "Execute csvq with specific options."
   (interactive)
   (let ((args (csvq-read-args query options)))
@@ -32,31 +32,32 @@
 (defun csvq ()
   "Execute csvq."
   (interactive)
-  (csvq-with-options nil ""))
+  (csvq-ops nil ""))
 
-(defun csvq-insert-to-buffer-with-options (&optional buffer query options)
+(defun csvq-create-ops (&optional buffer-name query options)
   "Execute csvq with specific options and insert logs and result-set into the other buffer."
   (interactive)
-  (unless buffer
-    (setq buffer (read-string "buffer name: ")))
+  (unless buffer-name
+    (setq buffer-name (read-string "buffer name: ")))
   (let ((log)
-	(args (csvq-read-args query options)))
+        (args (csvq-read-args query options)))
     (setq log (apply 'csvq-exec args))
-    (get-buffer-create buffer)
-    (switch-to-buffer buffer)
-    (goto-char (point-max))
-    (insert log))
+    (let ((buffer (get-buffer-create buffer-name)))
+      (set-buffer buffer)
+      (goto-char (point-max))
+      (insert log)
+      (switch-to-buffer buffer)))
   (csvq-terminate))
 
-(defun csvq-insert-to-buffer (&optional output-format)
+(defun csvq-create (&optional output-format)
   "Execute csvq and insert logs and result-set into the other buffer."
   (interactive)
   (unless output-format
     (setq output-format csvq-default-format))
   (let ((options (format "-f %s -P" output-format)))
-    (csvq-insert-to-buffer-with-options nil nil options)))
+    (csvq-create-ops nil nil options)))
 
-(defun csvq-insert-with-options (&optional query options)
+(defun csvq-insert-ops (&optional query options)
   "Execute csvq with specific options and insert logs and result-set into the current buffer."
   (interactive)
   (let ((args (csvq-read-args query options)))
@@ -69,7 +70,7 @@
   (unless output-format
     (setq output-format csvq-default-format))
   (let ((options (format "-f %s -P" output-format)))
-    (csvq-insert-with-options nil options)))
+    (csvq-insert-ops nil options)))
 
 (defun csvq-insert-csv ()
   "Execute csvq and insert logs and result-set formatted in CSV into the current buffer."
@@ -135,7 +136,7 @@
   (org-table-align)
   (csvq-terminate))
 
-(defun csvq-org-with-options (&optional query options)
+(defun csvq-org-ops (&optional query options)
   "Execute csvq with specific options to the current Org-mode table."
   (interactive)
   (let ((args (csvq-read-args query options)))
@@ -146,34 +147,34 @@
 (defun csvq-org ()
   "Execute csvq to the current Org-mode table."
   (interactive)
-  (csvq-org-with-options nil ""))
+  (csvq-org-ops nil ""))
 
-(defun csvq-org-insert-to-buffer-with-options (&optional buffer query options)
+(defun csvq-org-create-ops (&optional buffer-name query options)
   "Execute csvq with specific options to the current Org-mode table and insert logs and result-set into the other buffer."
   (interactive)
   (csvq-check-org-table)
-  (unless buffer
-    (setq buffer (read-string "buffer name: ")))
+  (unless buffer-name
+    (setq buffer-name (read-string "buffer name: ")))
   (let ((log)
 	(args (csvq-read-args query options)))
     (setq log (apply 'csvq-org-table-exec args))
-    (get-buffer-create buffer)
-    (switch-to-buffer buffer)
-    (goto-char (point-max))
-    (insert log))
+    (let ((buffer (get-buffer-create buffer-name)))
+      (set-buffer buffer)
+      (goto-char (point-max))
+      (insert log)
+      (switch-to-buffer buffer)))
   (csvq-terminate))
 
-(defun csvq-org-insert-to-buffer (&optional output-format)
+(defun csvq-org-create (&optional output-format)
   "Execute csvq to the current Org-mode table and insert logs and result-set into the other buffer."
   (interactive)
   (unless output-format
     (setq output-format csvq-default-format))
   (let ((options (format "-f %s -P" output-format)))
-    (csvq-org-insert-to-buffer-with-options nil nil options)))
+    (csvq-org-create-ops nil nil options)))
 
 (defun csvq-exec (query options)
   "Execute csvq."
-  (csvq-set-log)
   (csvq-start (format "Execute query (options '%s'): %s" options query))
   (let ((args (csvq-parse-command-args query options)))
     (with-temp-buffer
@@ -185,7 +186,6 @@
 
 (defun csvq-org-table-exec (query options &optional filter)
   "Execute csvq for a Org-mode table."
-  (csvq-set-log)
   (csvq-start (format "Execute query for Org-mode table (options '%s'): %s" options query))
   (let ((args (csvq-parse-command-args query options))
         (table (org-table-to-lisp (buffer-substring-no-properties (org-table-begin) (org-table-end)))))
@@ -238,15 +238,15 @@
     (csvq-append-log (format "[%s] Query terminated.\n\n" (current-time-string))))
 
 (defun csvq-append-log (log)
-  (with-current-buffer csvq-log-buffer
+  (with-current-buffer (csvq-get-log-buffer)
     (goto-char (point-max))
     (insert log)))
 
-(defun csvq-set-log ()
+(defun csvq-get-log-buffer ()
   (get-buffer-create csvq-log-buffer))
 
 (defun csvq-open-log ()
-  (switch-to-buffer csvq-log-buffer)
+  (switch-to-buffer (csvq-get-log-buffer))
   (goto-char (point-max)))
 
 (defun csvq-error-message ()
