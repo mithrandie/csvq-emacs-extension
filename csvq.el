@@ -24,31 +24,43 @@
 (defun csvq-with-options (&optional query options)
   "Execute csvq with specific options."
   (interactive)
-  (unless query
-    (setq query (read-string "query: ")))
-  (unless options
-    (setq options (read-string "options: ")))
-  (setq query (csvq-add-query-terminator query))
-  (csvq-exec query options)
+  (let ((args (csvq-read-args query options)))
+    (apply 'csvq-exec args))
   (csvq-terminate)
   (csvq-open-log))
 
 (defun csvq ()
   "Execute csvq."
   (interactive)
-  (let ((query nil))
-    (if (region-active-p)
-      (setq query (buffer-substring-no-properties (region-beginning) (region-end))))
-    (csvq-with-options query "")))
+  (csvq-with-options nil ""))
+
+(defun csvq-insert-to-buffer-with-options (&optional buffer query options)
+  "Execute csvq with specific options and insert logs and result-set into the other buffer."
+  (interactive)
+  (unless buffer
+    (setq buffer (read-string "buffer name: ")))
+  (let ((log)
+	(args (csvq-read-args query options)))
+    (setq log (apply 'csvq-exec args))
+    (get-buffer-create buffer)
+    (switch-to-buffer buffer)
+    (goto-char (point-max))
+    (insert log))
+  (csvq-terminate))
+
+(defun csvq-insert-to-buffer (&optional output-format)
+  "Execute csvq and insert logs and result-set into the other buffer."
+  (interactive)
+  (unless output-format
+    (setq output-format csvq-default-format))
+  (let ((options (format "-f %s -P" output-format)))
+    (csvq-insert-to-buffer-with-options nil nil options)))
 
 (defun csvq-insert-with-options (&optional query options)
   "Execute csvq with specific options and insert logs and result-set into the current buffer."
   (interactive)
-  (unless query
-    (setq query (read-string "query: ")))
-  (unless options
-    (setq options (read-string "options: ")))
-  (insert (csvq-exec query options))
+  (let ((args (csvq-read-args query options)))
+    (insert (apply 'csvq-exec args)))
   (csvq-terminate))
 
 (defun csvq-insert (&optional output-format)
@@ -111,11 +123,11 @@
     (user-error "Not in Org-mode"))
   (unless (org-at-table-p)
     (user-error "No table at point"))
-  (unless query
-    (setq query (read-string "query: ")))
   (unless options
     (setq options (format "-f ORG")))
-  (setq query (csvq-add-query-terminator query))
+  (let ((args (csvq-read-args query options)))
+    (setq query (nth 0 args))
+    (setq options (nth 1 args)))
   (when auto-select
     (setq query (format "%s SELECT * FROM stdin;" query)))
   (let ((current-point (point))
@@ -130,7 +142,7 @@
   "Execute csvq."
   (csvq-set-log)
   (csvq-start (format "Execute query (options '%s'): %s" options query))
-  (let ((args (csvq-parse-args query options)))
+  (let ((args (csvq-parse-command-args query options)))
     (with-temp-buffer
       (let ((ret (apply 'call-process "csvq" nil t nil args)))
         (unless (zerop ret)
@@ -142,7 +154,7 @@
   "Execute csvq for a Org-mode table."
   (csvq-set-log)
   (csvq-start (format "Execute query for update (options '%s'): %s" options query))
-  (let ((args (csvq-parse-args query options))
+  (let ((args (csvq-parse-command-args query options))
         (table (org-table-to-lisp (buffer-substring-no-properties (org-table-begin) (org-table-end)))))
     (with-temp-buffer
       (insert (orgtbl-to-csv table nil))
@@ -152,12 +164,27 @@
         (csvq-append-log (buffer-string))
         (csvq-filter-log (buffer-string))))))
 
-(defun csvq-parse-args (query options)
+(defun csvq-read-args (query options)
+  (unless query
+    (if (region-active-p)
+      (setq query (buffer-substring-no-properties (region-beginning) (region-end)))
+      (setq query (read-string "query: "))))
+  (unless options
+    (setq options (read-string "options: ")))
+  (setq query (csvq-add-query-terminator query))
+  (if (and (equal query "") (not (string-match "\-s" options)))
+      (csvq-error "query is empty"))
+  (list query options))
+
+(defun csvq-parse-command-args (query options)
   (let ((args '())
         (option-list (split-string options nil t)))
     (dolist (elt option-list)
       (add-to-list 'args elt t))
-    (add-to-list 'args query t)))
+    (if (equal query "")
+      args
+      (add-to-list 'args query t))))
+
 
 (defun csvq-start (message)
   (csvq-append-log (format "[%s] %s\n" (current-time-string) message)))
@@ -195,12 +222,12 @@
 
 (defun csvq-add-query-terminator (s)
   (setq s (csvq-trim-right s))
-  (if (not (equal (substring s -1) ";"))
-    (concat s ";")
-    s))
+  (if (or (equal s "") (equal (substring s -1) ";"))
+    s
+    (concat s ";")))
 
 (defun csvq-trim-right (s)
-  (if (string-match "[ \t\r\n]*$" s)
+  (if (string-match "[ \t\r\n]+$" s)
     (replace-match "" nil nil s)
     s))
 

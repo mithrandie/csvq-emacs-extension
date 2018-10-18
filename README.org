@@ -1,6 +1,6 @@
 * csvq emacs extension
 
-  This package is a emacs extension for [[https://github.com/mithrandie/csvq][csvq (https://github.com/mithrandie/csvq)]]
+  This package is an emacs extension for [[https://github.com/mithrandie/csvq][csvq (https://github.com/mithrandie/csvq)]]
 
 * Variables
 
@@ -11,10 +11,12 @@
 
 - csvq :: Execute csvq and write the results to the csvq-log-buffer.
 - csvq-insert :: Execute csvq and insert the results to the current buffer.
+- csvq-insert-to-buffer :: Execute csvq and insert the results to the specified buffer.
 - csvq-org-replace :: Execute csvq to the current Org-mode table and replace the table with the results.
 - csvq-org-update :: Execute csvq to the current Org-mode table and replace the table with the auto-selected result.
 - csvq-with-options :: Execute csvq with specific options and write the results to the csvq-log-buffer.
 - csvq-insert-with-options :: Execute csvq with specific options and insert the results to the current buffer.
+- csvq-insert-to-buffer-with-options :: Execute csvq with specific options and insert the results to the specified buffer.
 - csvq-insert-csv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in CSV.
 - csvq-insert-tsv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in TSV.
 - csvq-insert-json :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in JSON.
@@ -23,3 +25,23 @@
 - csvq-insert-gfm :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in GitHub Flavored Markdown.
 - csvq-insert-org :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in Org-mode table.
 - csvq-insert-text :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in text table.
+
+* Query and Options
+
+** Query
+
+If an active resion exists, then the string in the region is used as a query to execute.
+Otherwise you can input a query in the emacs mini buffer after calling a function.
+
+You can also use the [[https://mithrandie.github.io/csvq/reference/built-in.html#source][SOURCE statement]] in a query to execute a query or statements written in a file.
+
+** Options
+
+You can specify [[https://mithrandie.github.io/csvq/reference/command.html#options][csvq command options]] with the functions named "*-with-options".
+
+Some command options can also be specified in a query by using [[https://mithrandie.github.io/csvq/reference/flag.html][SET FLAG statement]].
+
+* Org-mode Tables
+
+In a csvq execution called by csvq-org-* functions, the data of the org-mode table is stored in a temporary table named as "STDIN".
+You can manipulate the data by executing queries to the STDIN table.
