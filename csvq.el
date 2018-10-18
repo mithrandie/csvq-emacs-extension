@@ -119,10 +119,7 @@
 (defun csvq-org-replace (&optional query options auto-select)
   "Execute csvq to the current Org-mode table and replace the table with the result."
   (interactive)
-  (unless (eq major-mode 'org-mode)
-    (user-error "Not in Org-mode"))
-  (unless (org-at-table-p)
-    (user-error "No table at point"))
+  (csvq-check-org-table)
   (unless options
     (setq options (format "-f ORG")))
   (let ((args (csvq-read-args query options)))
@@ -131,12 +128,48 @@
   (when auto-select
     (setq query (format "%s SELECT * FROM stdin;" query)))
   (let ((current-point (point))
-	(view (csvq-org-table-exec query options)))
+	(view (csvq-org-table-exec query options t)))
     (delete-region (org-table-begin) (org-table-end))
     (insert view)
     (goto-char (min current-point (point-max))))
   (org-table-align)
   (csvq-terminate))
+
+(defun csvq-org-with-options (&optional query options)
+  "Execute csvq with specific options to the current Org-mode table."
+  (interactive)
+  (let ((args (csvq-read-args query options)))
+    (apply 'csvq-org-table-exec args))
+  (csvq-terminate)
+  (csvq-open-log))
+
+(defun csvq-org ()
+  "Execute csvq to the current Org-mode table."
+  (interactive)
+  (csvq-org-with-options nil ""))
+
+(defun csvq-org-insert-to-buffer-with-options (&optional buffer query options)
+  "Execute csvq with specific options to the current Org-mode table and insert logs and result-set into the other buffer."
+  (interactive)
+  (csvq-check-org-table)
+  (unless buffer
+    (setq buffer (read-string "buffer name: ")))
+  (let ((log)
+	(args (csvq-read-args query options)))
+    (setq log (apply 'csvq-org-table-exec args))
+    (get-buffer-create buffer)
+    (switch-to-buffer buffer)
+    (goto-char (point-max))
+    (insert log))
+  (csvq-terminate))
+
+(defun csvq-org-insert-to-buffer (&optional output-format)
+  "Execute csvq to the current Org-mode table and insert logs and result-set into the other buffer."
+  (interactive)
+  (unless output-format
+    (setq output-format csvq-default-format))
+  (let ((options (format "-f %s -P" output-format)))
+    (csvq-org-insert-to-buffer-with-options nil nil options)))
 
 (defun csvq-exec (query options)
   "Execute csvq."
@@ -150,10 +183,10 @@
         (csvq-append-log (buffer-string))
         (buffer-string)))))
 
-(defun csvq-org-table-exec (query options)
+(defun csvq-org-table-exec (query options &optional filter)
   "Execute csvq for a Org-mode table."
   (csvq-set-log)
-  (csvq-start (format "Execute query for update (options '%s'): %s" options query))
+  (csvq-start (format "Execute query for Org-mode table (options '%s'): %s" options query))
   (let ((args (csvq-parse-command-args query options))
         (table (org-table-to-lisp (buffer-substring-no-properties (org-table-begin) (org-table-end)))))
     (with-temp-buffer
@@ -162,7 +195,9 @@
         (unless (zerop ret)
           (csvq-error (csvq-error-message)))
         (csvq-append-log (buffer-string))
-        (csvq-filter-log (buffer-string))))))
+        (if filter
+          (csvq-filter-log (buffer-string))
+          (buffer-string))))))
 
 (defun csvq-read-args (query options)
   (unless query
@@ -185,6 +220,11 @@
       args
       (add-to-list 'args query t))))
 
+(defun csvq-check-org-table ()
+  (unless (eq major-mode 'org-mode)
+    (user-error "Not in Org-mode"))
+  (unless (org-at-table-p)
+    (user-error "No table at point")))
 
 (defun csvq-start (message)
   (csvq-append-log (format "[%s] %s\n" (current-time-string) message)))

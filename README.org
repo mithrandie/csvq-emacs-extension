@@ -10,13 +10,19 @@
 * Functions
 
 - csvq :: Execute csvq and write the results to the csvq-log-buffer.
+- csvq-with-options :: Execute csvq with specific options and write the results to the csvq-log-buffer.
 - csvq-insert :: Execute csvq and insert the results to the current buffer.
+- csvq-insert-with-options :: Execute csvq with specific options and insert the results to the current buffer.
 - csvq-insert-to-buffer :: Execute csvq and insert the results to the specified buffer.
+- csvq-insert-to-buffer-with-options :: Execute csvq with specific options and insert the results to the specified buffer.
+
+- csvq-org :: Execute csvq to the current Org-mode table and write the results to the csvq-log-buffer.
+- csvq-org-with-options :: Execute csvq with specific options to the current Org-mode table and write the results to the csvq-log-buffer.
+- csvq-org-insert-to-buffer :: Execute csvq to the current Org-mode table and insert the results to the specified buffer.
+- csvq-org-insert-to-buffer-with-options :: Execute csvq with specific options to the current Org-mode table and insert the results to the specified buffer.
 - csvq-org-replace :: Execute csvq to the current Org-mode table and replace the table with the results.
 - csvq-org-update :: Execute csvq to the current Org-mode table and replace the table with the auto-selected result.
-- csvq-with-options :: Execute csvq with specific options and write the results to the csvq-log-buffer.
-- csvq-insert-with-options :: Execute csvq with specific options and insert the results to the current buffer.
-- csvq-insert-to-buffer-with-options :: Execute csvq with specific options and insert the results to the specified buffer.
+
 - csvq-insert-csv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in CSV.
 - csvq-insert-tsv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in TSV.
 - csvq-insert-json :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in JSON.
