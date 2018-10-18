@@ -118,9 +118,11 @@
   (setq query (csvq-add-query-terminator query))
   (when auto-select
     (setq query (format "%s SELECT * FROM stdin;" query)))
-  (let ((view (csvq-org-table-exec query options)))
+  (let ((current-point (point))
+	(view (csvq-org-table-exec query options)))
     (delete-region (org-table-begin) (org-table-end))
-    (insert view))
+    (insert view)
+    (goto-char (min current-point (point-max))))
   (org-table-align)
   (csvq-terminate))
 
