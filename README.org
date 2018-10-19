@@ -23,15 +23,6 @@
 - csvq-org-replace :: Execute csvq to the current Org-mode table and replace the table with the results.
 - csvq-org-update :: Execute csvq to the current Org-mode table and replace the table with the auto-selected result.
 
-- csvq-insert-csv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in CSV.
-- csvq-insert-tsv :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in TSV.
-- csvq-insert-json :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in JSON.
-- csvq-insert-jsonh :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in JSON with hexadecimal escape sequences.
-- csvq-insert-jsona :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in JSON with hexadecimal escape sequences for all characters.
-- csvq-insert-gfm :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in GitHub Flavored Markdown.
-- csvq-insert-org :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in Org-mode table.
-- csvq-insert-text :: Execute csvq and insert the results to the current buffer. The result-sets are formatted in text table.
-
 - csvq-calc :: Execute calc subcommand of csvq. A string of current active region is used as a value to be calculated.
 
 * Query and Options
