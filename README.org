@@ -45,7 +45,7 @@ You can also use the [[https://mithrandie.github.io/csvq/reference/built-in.html
 
 ** Options
 
-You can specify [[https://mithrandie.github.io/csvq/reference/command.html#options][csvq command options]] with the functions named "*-with-options".
+You can specify [[https://mithrandie.github.io/csvq/reference/command.html#options][csvq command options]] with the functions named "*-ops".
 
 Some command options can also be specified in a query by using [[https://mithrandie.github.io/csvq/reference/flag.html][SET FLAG statement]].
 
